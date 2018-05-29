@@ -10,11 +10,32 @@
 		$since_id = getSinceId($mysqli);
 		$mentions = getMentions($twitter, $since_id);
 		foreach($mentions as $mention){
-			$reply = replyMain($mention);
+			$columns = null;
+			if ($state = $mysqli->prepare("select * from user where id=?")){
+				$state->bind_param("i", $mention->user->id_str);
+				$state->execute();
+				$res = $state->get_result();
+				$columns = $res->fetch_assoc();
+				$state->close();
+			}
+
+			$ret = replyMain($mention, $columns);
+
+			if ($columns){
+			}else{
+				if ($state = $mysqli->prepare("insert into user (id) values (?)")){
+					$state->bind_param("i", $mention->user->id_str);
+					$state->execute();
+					$state->close();
+				}
+			}
+
+			$reply = $ret["reply"];
 			$reply["in_reply_to_status_id"] = $mention->id_str;
 			$reply["status"] = "@{$mention->user->screen_name}\n{$reply['status']}";
 			print_r($reply);
-			$twitter->post("statuses/update", $reply);
+			print_r($columns);
+			var_export($twitter->post("statuses/update", $reply));
 			$since_id = max($since_id, $mention->id_str);
 		}
 		setSinceId($mysqli, $since_id);
@@ -23,10 +44,22 @@
 
 	$mysqli->close();
 
-	function replyMain($mention){
+	function replyMain($mention, $columns){
 		$reply = [];
-		$reply["status"] = "Command List (not implemented yet! )\n1. たいほしろ\n2. ばしょいどう\n";
-		return $reply;
+
+		if (!$columns){	// ゲームスタート
+			$reply["status"] = <<<EOM
+ーハイエナ連続殺人事件ー
+
+ヨシ：大変です！亀の穴の社長、トローパ・ザ・グレートが暗殺されました！
+ボス：なに？あの謎の組織のトップが？
+ヨシ：そうです。首筋を噛みちぎり、亀の穴内部の誰かの犯行でしょう。
+ボスは考えた、本当に亀の穴内部の仕業なのか？と……
+EOM;
+		}else{
+			$reply["status"] = "Command List (not implemented yet! )\n1. たいほしろ\n2. ばしょいどう\n";
+		}
+		return ["reply" => $reply, "columns" => $columns];
 	}
 
 	function getMentions($twitter, $since_id){
