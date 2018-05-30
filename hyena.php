@@ -30,12 +30,13 @@
 				}
 			}
 
-			$reply = $ret["reply"];
-			$reply["in_reply_to_status_id"] = $mention->id_str;
-			$reply["status"] = "@{$mention->user->screen_name}\n{$reply['status']}";
-			print_r($reply);
-			print_r($columns);
-			var_export($twitter->post("statuses/update", $reply));
+			$replys = $ret["replys"];
+			foreach($replys as $reply){
+				$status = ["status" => $reply];
+				$status["in_reply_to_status_id"] = $mention->id_str;
+				$status["status"] = "@{$mention->user->screen_name}\n{$status['status']}";
+				var_export($twitter->post("statuses/update", $status));
+			}
 			$since_id = max($since_id, $mention->id_str);
 		}
 		setSinceId($mysqli, $since_id);
@@ -45,21 +46,44 @@
 	$mysqli->close();
 
 	function replyMain($mention, $columns){
-		$reply = [];
+		$replys = [];
 
 		if (!$columns){	// ゲームスタート
-			$reply["status"] = <<<EOM
+			$status = <<<EOM
 ーハイエナ連続殺人事件ー
 
-ヨシ：大変です！亀の穴の社長、トローパ・ザ・グレートが暗殺されました！
+ヨシ：大変です！「かめのあな」(亀の穴)の社長、「こもろう」(殻二篭郎)が暗殺されました！
 ボス：なに？あの謎の組織のトップが？
 ヨシ：そうです。首筋を噛みちぎり、亀の穴内部の誰かの犯行でしょう。
-ボスは考えた、本当に亀の穴内部の仕業なのか？と……
+……本当に亀の穴内部の仕業なのか？
 EOM;
+		array_push($replys, $status);
+			$status = <<<EOM
+ヨシ：ここが事件のあった「かめよしまち」(亀吉町)です。
+どこから捜査を始めればよいでしょうか？
+ボス、リプライで私に指示をください。
+
+コマンドリスト
+・しらべろ　(人名または地名)
+・よべ　(人名)
+・いけ　(地名)
+・たいほしろ
+EOM;
+			array_push($replys, $status);
 		}else{
-			$reply["status"] = "Command List (not implemented yet! )\n1. たいほしろ\n2. ばしょいどう\n";
+			$status = <<<EOM
+ヨシ：ん？？いまいちおっしゃることが分かりませんが。
+もう一度願います、ボス？
+
+コマンドリスト
+・しらべろ　(人名または地名)
+・よべ　(人名)
+・いけ　(地名)
+・たいほしろ
+EOM;
+			array_push($replys, $status);
 		}
-		return ["reply" => $reply, "columns" => $columns];
+		return ["replys" => $replys, "columns" => $columns];
 	}
 
 	function getMentions($twitter, $since_id){
