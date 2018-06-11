@@ -1,0 +1,85 @@
+<twitrpg>
+	<prologue>
+		<column key="location" default="ゆきやま"/>
+		<column key="isHaveKey" default="false"/>
+
+		<reply>
+			ー雪山脱出ゲームー
+			ある日、私は車で会社に向かっていた。
+			毎日同じことの繰り返し、そうぼやきながら、ボーッと車を運転していた。
+			しかし、気がつくと、目の前に純白の景色が広がっていた。
+			どうやら私は、雪山で遭難していた！
+		</reply>
+		<reply>
+			ここは「ゆきやま」。
+			目の前には「どあ」がある。
+			さらに、遠くのほうには「こや」が見える。
+			どうする？
+
+			コマンドリスト
+			・いく　(場所)
+			・しらべる　(場所または物)
+			・とる　(物)
+			・つかう　(物)
+		</reply>
+	</prologue>
+	<action>
+		<reply>
+			？私はどうすればよいのだろう？
+
+			コマンドリスト
+			・いく　(場所)
+			・しらべる　(場所または物)
+			・とる　(物)
+			・つかう　(物)
+		</reply>
+
+		<token id="go">
+			<word>いく</word>
+		</token>
+		<token id="search">
+			<word>しらべる</word>
+		</token>
+		<token id="get">
+			<word>とる</word>
+		</token>
+		<token id="use">
+			<word>つかう</word>
+		</token>
+
+		<token id="snowmountain">
+			<word>ゆきやま</word>
+		</token>
+		<token id="house">
+			<word>こや</word>
+		</token>
+		<token id="door">
+			<word>どあ</word>
+		</token>
+		<token id="key">
+			<word>かぎ</word>
+		</token>
+
+		<argument token="go">
+			<left>
+				<reply>私は「<inline />」を知らない。</reply>
+
+				<template id="gone">ここは「<inline />」だ。</template>
+				<argument token="snowmountain">
+					<reply template="gone" />
+					<set key="location" value="ゆきやま" />
+				</argument>
+				<argument token="house">
+					<reply template="gone" />
+					<set key="location" value="こや" />
+				</argument>
+			</left>
+		</argument>
+		<argument token="search">
+		</argument>
+		<argument token="get">
+		</argument>
+		<argument token="use">
+		</argument>
+	</action>
+</twitrpg>
