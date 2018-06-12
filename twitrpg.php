@@ -1,10 +1,45 @@
 <?php
+	if ($argc != 2){
+		error_log("Undefined input scenario file. ");
+		exit(1);
+	}
+	$scenario = new SimpleXMLElement(file_get_contents($argv[1]));
+
 	require "twitteroauth/autoload.php";
 	use Abraham\TwitterOAuth\TwitterOAuth;
 	require "/var/hyenaconf.php";
 
 	$twitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET);
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$db = $scenario->database;
+	mysqli_report(MYSQLI_REPORT_STRICT);
+	$mysqli = new mysqli($db->host, $db->user, $db->password, $db->name);
+
+	if ($result = $mysqli->query("show tables like 'system'")){
+		if (!$result->num_rows){
+			$mysqli->query("create table system (since_id bigint unsigned not null default 0)");
+			$mysqli->query("insert into system () values ()");
+		}
+		$result->close();
+	}
+	if ($result = $mysqli->query("show tables like 'user'")){
+		if (!$result->num_rows){
+			$mysqli->query("create table user (id bigint unsigned not null primary key)");
+		}
+		$result->close();
+	}
+
+	foreach($db->column as $column){
+		// SQL インジェクション対策が必要
+		if ($result = $mysqli->query("show columns from user like '${column['key']}'")){
+			if (!$result->num_rows){
+				$mysqli->query("alter table user add ${column['key']} varchar(32) not null default '${column['default']}'");
+			}
+			$result->close();
+		}
+	}
+
+	unset($db);
+	exit;
 
 	while(1){
 		$since_id = getSinceId($mysqli);

@@ -1,8 +1,15 @@
+<?xml version='1.0'?>
 <twitrpg>
-	<prologue>
+	<database>
+		<host>***</host>
+		<user>***</user>
+		<password>***</password>
+		<name>***</name><!-- Database name -->
+
 		<column key="location" default="ゆきやま"/>
 		<column key="isHaveKey" default="false"/>
-
+	</database>
+	<prologue>
 		<reply>
 			ー雪山脱出ゲームー
 			ある日、私は車で会社に向かっていた。
